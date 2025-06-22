@@ -1,25 +1,24 @@
 # The role of predictive biomarkers
 
-In medicine, it is very often the case that a therapy T helps some patients but not all.  Or we can choose an alternative therapy S, and the alternative is better for some but not for all.
-Of course, "helps" is not a binary outcome, and Kaplan-Meier curves for S and T capture more necessary details, the statistics that for different time points, e.g. 1, 2, up to 25 months after the
-application of those who survived a lethal disease or those who did not have a relapse for a chronic disease.
+In medicine, it is often the case that a therapy **T** helps some patients but not all. Alternatively, we may choose a therapy **S**, which works better for some but not for others. Of course, "helps" is not a binary outcome, and Kaplan–Meier curves for **S** and **T** capture more relevant detail — namely, the proportion of patients who survive (or remain relapse-free) at various time points, such as 1, 2, … up to 25 months after treatment.
 
-But with testing the patients and considering personal characteristic we can compute a "biomarker" B with true/false values, so patients form four groups, SB+, SB-, TB+, TB- according to the received therapy and the value of B.
-oHere I tested PBMF, described below, from the Cancer Cell paper by Arango-Argoty et al. (link). The method proceeds in three stages:
-1.  Starting from a table of 432 patient characteristics, a subset of features is selected, and some aggregate variables are added.
-2. Ten neural network models with identical architecture are trained independently and assembled as an ensemble.
+By testing patients and considering their personal characteristics, we can compute a **biomarker B** with binary values (true/false). This divides patients into four groups: **SB⁺**, **SB⁻**, **TB⁺**, and **TB⁻**, depending on the therapy received and the value of **B**.
+Here I tested **PBMF**, "predictive biomarker modeling framework", described below, from the Cancer Cell paper by Arango-Argoty et al. 
+(https://www.cell.com/cancer-cell/fulltext/S1535-6108(25)00130-8#fig2). The method proceeds in three stages:
+1. Starting from a table of hundreds patient characteristics, a subset of features is selected, and some aggregate variables are added.
+2. Ten neural network models with identical architecture are trained independently and combined into an ensemble.
 3. A decision tree is distilled from the ensemble, providing interpretable rules with predictive accuracy close to that of the original model.
 
+The method is described as contrastive because it produces a binary biomarker that splits patients into **B⁺** and **B⁻** groups, whose survival distributions are contrasted using Kaplan–Meier analysis. While the optimization details are abstracted in the code, the essential objective is to identify features and patterns that maximize prognostic contrast between subgroups.
 
-The method is described as contrastive because it produces a binary biomarker that splits patients into B⁺ and B⁻ groups, whose survival distributions are contrasted using Kaplan–Meier analysis. While the optimization details are abstracted in the code, the essential objective is to identify features and patterns that maximize prognostic contrast between subgroups.
 
-I modified the code so it runs on my Apple desktop, but I will modify its environment so it runs faster than 24h by enabling tensorflow-metal etc.
-My modifications:
-1. set local_module_path using sys;
-2. replacing h5 with weights.h5 in PBMF/attention/__init__.py and in PBMF/attention/model_zoo/Ensemble.py.
-![alt text](./track.gif) Under the hood, the PBMF searches for a biomarker that maximizes the benefit under treatment of interest while at the same time minimizes the effect of the control treatment.
+I modified the code so it runs on my Apple desktop, and I plan further improvements to reduce runtime below 24 hours using tensorflow-metal and related optimizations. My modifications:
+1. Set `local_module_path` using `sys`.
+2. Replaced `.h5` with `.weights.h5` in `PBMF/attention/__init__.py` and `PBMF/attention/model_zoo/Ensemble.py`.
 
-## Quick tour
+Modified code runs quite slowly, so I will test an environment that enables GPU and caching of writing to files
+
+## Quick tour of PBMF
 The PBMF runs as follows: 
 
 ```python
